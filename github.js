@@ -10,6 +10,7 @@ const get = require('lodash/get');
 const colors = require('colors');
 const emoji = require('node-emoji');
 const width = require('string-width');
+const { exit } = require('process');
 
 /**
  *
@@ -179,9 +180,14 @@ async function ensurePrsExist({
     const base = index === 0 || branch === combinedBranch ? baseBranch : allBranches[index - 1];
     process.stdout.write(`Checking if PR for branch ${branch} already exists... `);
     const prs = await ghRepo.prsAsync({
+      state: 'all',
+      sort: 'created',
+      direction: 'desc',
       head: `${nick}:${branch}`,
     });
-    let prResponse = prs[0] && prs[0][0];
+    const prsBody = prs[0];
+    // Use the oldest one for now
+    let prResponse = prsBody && prsBody[prsBody.length - 1];
     let prExists = false;
     if (prResponse) {
       console.log('yep');
