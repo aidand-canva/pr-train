@@ -43,7 +43,7 @@ function constructTrainNavigation(branchToPrDict, currentBranch, combinedBranch)
     const prInfoHtml = `1. ${prNumber}${combinedInfo}${maybeHandRight}`;
     prList.push(prInfoHtml);
   });
-  contents += '### 🚂 PR Train \n';
+  contents += '### PR Train 🚂 \n';
   contents += prList.join('\n');
   contents += '\n</pr-train-toc>'
   return contents;
