@@ -3,3 +3,5 @@ node_modules
 .idea
 # Because dogfooding
 .pr-train.yml
+
+git-pr-train-2.5.0.tgz
