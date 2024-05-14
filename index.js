@@ -84,7 +84,7 @@ async function getConfigPath(sg) {
 }
 
 /**
- * @typedef {string | Object.<string, { combined: boolean, initSha?: string }>} BranchCfg
+ * @typedef {string | Object.<string, { combined: boolean, initSha?: string, base?: boolean }>} BranchCfg
  * @typedef {Object.<string, Array.<string | BranchCfg>>} TrainCfg
  * @typedef {{ prs?: Object, trains: Array.<TrainCfg>}} YamlCfg
  */
@@ -183,6 +183,20 @@ function getConfigOption(ymlConfig, path) {
   return ptr;
 }
 
+/**
+ * @param {Array.<BranchCfg>} branchConfig
+ */
+function getTrainBase(branchConfig) {
+  for (const config of branchConfig) {
+    if (typeof config !== 'string') {
+      const branchName = Object.keys(config)[0];
+      if (config[branchName].base) {
+        return branchName;
+      }
+    }
+  }
+}
+
 async function main() {
   const sg = simpleGit();
   if (!(await sg.checkIsRepo())) {
@@ -271,6 +285,7 @@ async function main() {
   }
   const sortedTrainBranches = getBranchesInCurrentTrain(trainCfg);
   const combinedTrainBranch = getCombinedBranch(trainCfg);
+  const trainBase = getTrainBase(trainCfg);
 
   if (combinedTrainBranch && !allBranches.includes(combinedTrainBranch)) {
     const lastBranchBeforeCombined = sortedTrainBranches[sortedTrainBranches.length - 2];
@@ -331,7 +346,13 @@ async function main() {
     return;
   }
 
-  for (let i = 0; i < sortedTrainBranches.length - 1; ++i) {
+  let start = 0;
+  if (trainBase) {
+    start = sortedTrainBranches.findIndex(branch => branch === trainBase);
+    console.log("Starting at base: ", trainBase);
+  }
+
+  for (let i = start; i < sortedTrainBranches.length - 1; ++i) {
     const b1 = sortedTrainBranches[i];
     const b2 = sortedTrainBranches[i + 1];
     if (isBranchAncestor(sg, b1, b2)) {
